@@ -16,7 +16,7 @@ plugins {
     id 'org.springframework.boot' version '2.1.4.RELEASE'
 }
 
-mainClassName = 'com.example.challenge.ArchitectureApplication'
+mainClassName = 'com.challange.ChallengeApplication'
 
 dependencies {
     compile project(':contract')
@@ -57,6 +57,6 @@ allprojects {
         compileOnly 'org.projectlombok:lombok'
         annotationProcessor 'org.projectlombok:lombok'
         testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
+        implementation 'commons-net:commons-net:3.6'
     }
 }
