@@ -3,8 +3,10 @@ package com.challange.contract.v1.user;
 import com.challange.contract.v1.user.model.request.UserRequest;
 import com.challange.contract.v1.user.model.response.UserResponse;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RequestMapping("/v1/users")
@@ -27,6 +29,17 @@ public class UserController {
     @PostMapping
     public UserResponse create(@RequestBody UserRequest user) {
         return facade.create(user);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteById(@PathVariable String id) {
+        facade.deleteById(id);
+    }
+
+    @PutMapping("/{id}")
+    public UserResponse update(@PathVariable String id, @RequestBody @Valid UserRequest user) {
+        return facade.update(user);
     }
 
     @GetMapping("/teste")

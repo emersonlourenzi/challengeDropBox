@@ -24,4 +24,12 @@ public class UserFacade {
     public UserModel create(UserModel user) {
         return service.create(user);
     }
+
+    public void deleteById(String id) {
+        service.deleteById(id);
+    }
+
+    public UserModel update(UserModel user) {
+        return service.update(user);
+    }
 }

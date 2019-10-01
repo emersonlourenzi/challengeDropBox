@@ -2,9 +2,9 @@ package com.challange.impl.file.service;
 
 import com.challange.impl.user.service.UserService;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -19,18 +19,15 @@ import java.util.List;
 
 @Component
 @AllArgsConstructor
+@NoArgsConstructor
 public class FileService {
     private static final String HOST = "172.17.0.2";
     private static final String USUARIO = "chapolin";
     private static final String SENHA = "chapolin";
     private int counter = 0;
 
-    public FileService() {
-    }
-
-    FTPClient ft = new FTPClient();
-    @Autowired
-    UserService user = new UserService();
+    private FTPClient ft;
+    private UserService user;
 
     private void connectServerFTP() throws IOException {
         ft.connect(HOST);

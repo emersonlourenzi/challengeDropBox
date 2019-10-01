@@ -29,4 +29,12 @@ class UserContractFacade {
     UserResponse create(UserRequest user) {
         return UserMapper.mapToContract(facade.create(UserMapper.mapToImpl(user)));
     }
+
+    void deleteById(String id) {
+        facade.deleteById(id);
+    }
+
+    public UserResponse update(UserRequest user) {
+        return UserMapper.mapToContract(facade.update(UserMapper.mapToImpl(user)));
+    }
 }

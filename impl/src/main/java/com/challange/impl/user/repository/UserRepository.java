@@ -11,4 +11,8 @@ public interface UserRepository extends MongoRepository<UserEntity, String> {
 
     @Override
     <S extends UserEntity> S save(S entity);
+
+    @Override
+    void deleteById(String s);
+
 }
