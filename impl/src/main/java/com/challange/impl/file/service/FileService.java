@@ -1,47 +1,54 @@
 package com.challange.impl.file.service;
 
-import com.challange.impl.user.service.UserService;
+import com.challange.impl.upload.repository.UploadEntity;
+import com.challange.impl.upload.service.UploadService;
+import com.challange.impl.user.repository.UserRepository;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Component;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-@Component
+@Service
 @AllArgsConstructor
-@NoArgsConstructor
 public class FileService {
     private static final String HOST = "172.17.0.2";
     private static final String USUARIO = "chapolin";
     private static final String SENHA = "chapolin";
-    private int counter = 0;
 
-    private FTPClient ft;
-    private UserService user;
+    private FTPClient ftpClient;
+    private UserRepository repository;
+    private UploadService uploadService;
 
-    private void connectServerFTP() throws IOException {
-        ft.connect(HOST);
-        ft.login(USUARIO, SENHA);
+    public void connectServerFTP() throws IOException {
+        ftpClient.connect(HOST);
+        ftpClient.login(USUARIO, SENHA);
     }
 
-    public void saveFile(MultipartFile mpf, String idUser) throws Exception {
+    public void saveFile(MultipartFile files, String idUser) throws Exception {
+        int counter = 0;
         try {
             connectServerFTP();
-            if (user.verifyExists(idUser)) {
-                ft.changeWorkingDirectory(idUser);
-                String nameFile = mpf.getOriginalFilename();
+            if (verifyExists(idUser)) {
+                ftpClient.changeWorkingDirectory(idUser);
+                String nameFile = files.getOriginalFilename();
 
-                for (String file : ft.listNames()) {
+                for (String file : ftpClient.listNames()) {
                     String newName = "(" + counter + ")" + nameFile;
                     if (file.equals(newName)) {
                         counter++;
@@ -49,15 +56,15 @@ public class FileService {
                 }
 
                 String newName = "(" + counter + ")" + nameFile;
-                ft.storeFile(newName, mpf.getInputStream());
+                ftpClient.storeFile(newName, files.getInputStream());
                 saveUpload(newName, idUser);
             }
         } catch (IOException e) {
             throw new Exception("Não foi possível conectar no servidor FTP. " + e.getMessage());
         } finally {
             try {
-                ft.logout();
-                ft.disconnect();
+                ftpClient.logout();
+                ftpClient.disconnect();
             } catch (IOException e) {
                 throw new Exception("Não foi possível desconectar no servidor FTP. " + e.getMessage());
             }
@@ -68,18 +75,18 @@ public class FileService {
         FTPFile[] nameDirectory = null;
         try {
             connectServerFTP();
-            ft.enterLocalPassiveMode();
-            ft.changeWorkingDirectory(ideUser);
+            ftpClient.enterLocalPassiveMode();
+            ftpClient.changeWorkingDirectory(ideUser);
             //nameDirectory = ft.listNames();
-            nameDirectory = ft.listFiles();
+            nameDirectory = ftpClient.listFiles();
             Page<FTPFile> files = pagedSerch(pageable, nameDirectory);
             return files;
         } catch (IOException e) {
             throw new Exception("Não foi possível conectar no servidor FTP. " + e.getMessage());
         } finally {
             try {
-                ft.logout();
-                ft.disconnect();
+                ftpClient.logout();
+                ftpClient.disconnect();
             } catch (IOException e) {
                 throw new Exception("Não foi possível desconectar do servidor FTP. " + e.getMessage());
             }
@@ -107,21 +114,22 @@ public class FileService {
     }
 
     public void deleteFiles(String idUser, String name) throws Exception {
+        System.out.println(idUser + " ++++++++++++++++++++++++ " + name);
         try {
             connectServerFTP();
-            if (!user.verifyExists(idUser)) {
+            if (!verifyExists(idUser)) {
                 throw new Exception("Usuário inexistente.");
             } else {
-                ft.changeWorkingDirectory(idUser);
+                ftpClient.changeWorkingDirectory(idUser);
                 boolean fileExists = false;
-                for (FTPFile file : ft.listFiles()) {
+                for (FTPFile file : ftpClient.listFiles()) {
                     if (file.getName().equals(name)) {
                         fileExists = true;
                         break;
                     }
                 }
                 if (fileExists) {
-                    ft.deleteFile(name);
+                    ftpClient.deleteFile(name);
                     deleteUpload(name);
                 } else {
                     throw new Exception("Arquivo não encontrado.");
@@ -131,8 +139,8 @@ public class FileService {
             throw new Exception("Não foi possível conectar no servidor FTP. " + e.getMessage());
         } finally {
             try {
-                ft.logout();
-                ft.disconnect();
+                ftpClient.logout();
+                ftpClient.disconnect();
             } catch (IOException e) {
                 e.getMessage();
             }
@@ -140,9 +148,9 @@ public class FileService {
     }
 
     private void saveUpload(String name, String idUser) {
-        if (user.verifyExists(idUser)) {
-            /*Upload up = new Upload(name, idUser);
-            upload.save(up);*/
+        if (verifyExists(idUser)) {
+            UploadEntity up = new UploadEntity(name, idUser);
+            uploadService.save(up);
             /*String idArquivo = upload.buscarIdUpload(nome);
             compartilharArquivos(idArquivo,idUsuario);*/
         } else {
@@ -152,11 +160,34 @@ public class FileService {
 
     private void deleteUpload(String nameFile) {
         try {
-            //upload.delete(nameFile);
+            uploadService.delete(nameFile);
         } catch (Exception e) {
             e.getMessage();
         }
     }
 
+    public boolean verifyExists(String idUser) {
+        return repository.existsById(idUser);
+    }
 
+    public ResponseEntity listingFiles(Model model, String id, Optional<Integer> page, Optional<Integer> size) {
+        try {
+            int currentPage = page.orElse(1);
+            int pageSize = size.orElse(5);
+
+            Page<FTPFile> files = listFilesUser(id, PageRequest.of(currentPage - 1, pageSize));
+
+            model.addAttribute("files", files);
+            int totalPages = files.getTotalPages();
+            if (totalPages > 0) {
+                List<Integer> pageNumbers = IntStream.rangeClosed(1, totalPages)
+                        .boxed()
+                        .collect(Collectors.toList());
+                model.addAttribute("pageNumbers", pageNumbers);
+            }
+            return new ResponseEntity<>(files, HttpStatus.OK);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

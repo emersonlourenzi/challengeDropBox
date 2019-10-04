@@ -1,4 +1,4 @@
-package com.challange.impl.user.repository;
+package com.challange.impl.sharing.repository;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,10 +8,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 @Data
 @Builder
-@Document(value = "users")
-public class UserEntity {
+@Document(value = "shares")
+public class SharingEntity {
     private String id;
-    private String name;
-    private String email;
-    private String pass;
+    private String idFile;
+    private String idUser;
+    private String idUserCreator;
 }

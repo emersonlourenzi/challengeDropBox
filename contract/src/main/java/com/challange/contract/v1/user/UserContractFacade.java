@@ -26,15 +26,15 @@ class UserContractFacade {
         return UserMapper.mapToContract(facade.findById(id));
     }
 
-    UserResponse create(UserRequest user) {
+    UserResponse create(UserRequest user) throws Exception {
         return UserMapper.mapToContract(facade.create(UserMapper.mapToImpl(user)));
     }
 
-    void deleteById(String id) {
+    void deleteById(String id) throws Exception {
         facade.deleteById(id);
     }
 
-    public UserResponse update(UserRequest user) {
-        return UserMapper.mapToContract(facade.update(UserMapper.mapToImpl(user)));
+    public UserResponse update(String id, UserRequest user) {
+        return UserMapper.mapToContract(facade.update(id, UserMapper.mapToImpl(user)));
     }
 }

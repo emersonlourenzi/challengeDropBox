@@ -27,19 +27,19 @@ public class UserController {
     }
 
     @PostMapping
-    public UserResponse create(@RequestBody UserRequest user) {
+    public UserResponse create(@RequestBody UserRequest user) throws Exception {
         return facade.create(user);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteById(@PathVariable String id) {
+    public void deleteById(@PathVariable String id) throws Exception {
         facade.deleteById(id);
     }
 
     @PutMapping("/{id}")
     public UserResponse update(@PathVariable String id, @RequestBody @Valid UserRequest user) {
-        return facade.update(user);
+        return facade.update(id, user);
     }
 
     @GetMapping("/teste")

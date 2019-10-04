@@ -1,10 +1,12 @@
 package com.challange.impl.user.service;
 
+import com.challange.impl.file.service.FileService;
 import com.challange.impl.user.mapper.UserMapper;
 import com.challange.impl.user.model.UserModel;
 import com.challange.impl.user.repository.UserEntity;
 import com.challange.impl.user.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.apache.commons.net.ftp.FTPClient;
 import org.springframework.stereotype.Service;
 
 import java.util.InputMismatchException;
@@ -17,6 +19,8 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private UserRepository repository;
+    private FileService fs;
+    private FTPClient ft;
 
     public List<UserModel> findAll() {
         return repository.findAll().stream()
@@ -33,20 +37,32 @@ public class UserService {
         }
     }
 
-    public UserModel create(UserModel user) {
-
-        return UserMapper.mapToModel(repository.save(UserMapper.mapToEntity(user)));
+    public UserModel create(UserModel user) throws Exception {
+        UserModel user1 = UserMapper.mapToModel(repository.save(UserMapper.mapToEntity(user)));
+        fs.connectServerFTP();
+        ft.makeDirectory(user1.getId());
+        return user1;
     }
 
-    public void deleteById(String id) {
+    public void deleteById(String id) throws Exception {
+        if (fs.verifyExists(id)) {
+            repository.deleteById(id);
+            fs.connectServerFTP();
+            ft.enterLocalPassiveMode();
+            ft.changeWorkingDirectory(id);
+            for (String x : ft.listNames()) {
+                ft.deleteFile(x);
+            }
+            ft.changeToParentDirectory();
+            ft.removeDirectory(id);
+        } else {
+            throw new Exception("Usuário inexistente.");
+        }
+    }
+
+    public UserModel update(String id, UserModel user) {
         repository.deleteById(id);
-    }
-
-    public UserModel update(UserModel user) {
+        user.setId(id);
         return UserMapper.mapToModel(repository.save(UserMapper.mapToEntity(user)));
-    }
-
-    public boolean verifyExists(String idUser) {
-        return repository.existsById(idUser);
     }
 }

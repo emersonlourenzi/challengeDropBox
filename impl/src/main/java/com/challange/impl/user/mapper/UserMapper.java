@@ -9,6 +9,7 @@ public class UserMapper {
                 .id(userEntity.getId())
                 .name(userEntity.getName())
                 .email(userEntity.getEmail())
+                .pass(userEntity.getPass())
                 .build();
     }
 
@@ -17,6 +18,7 @@ public class UserMapper {
                 .id(userModel.getId())
                 .name(userModel.getName())
                 .email(userModel.getEmail())
+                .pass(userModel.getPass())
                 .build();
     }
 }

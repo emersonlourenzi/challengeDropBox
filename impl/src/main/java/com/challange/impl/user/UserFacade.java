@@ -10,7 +10,6 @@ import java.util.List;
 @Component
 @AllArgsConstructor
 public class UserFacade {
-
     private UserService service;
 
     public List<UserModel> findAll() {
@@ -21,15 +20,15 @@ public class UserFacade {
         return service.findById(id);
     }
 
-    public UserModel create(UserModel user) {
+    public UserModel create(UserModel user) throws Exception {
         return service.create(user);
     }
 
-    public void deleteById(String id) {
+    public void deleteById(String id) throws Exception {
         service.deleteById(id);
     }
 
-    public UserModel update(UserModel user) {
-        return service.update(user);
+    public UserModel update(String id, UserModel user) {
+        return service.update(id, user);
     }
 }
