@@ -1,8 +1,10 @@
 package com.challange.impl.sharing.service;
 
+import com.challange.impl.FacadeGeneral;
 import com.challange.impl.sharing.repository.SharingEntity;
 import com.challange.impl.sharing.repository.SharingRepository;
-import com.challange.impl.upload.service.UploadService;
+import com.challange.impl.upload.UploadFacade;
+import com.challange.impl.user.UserFacade;
 import com.mongodb.MongoClient;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -13,24 +15,75 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @AllArgsConstructor
 public class SharingService {
+    private UploadFacade upf;
+    private UserFacade uf;
     private SharingRepository sr;
-    private UploadService us;
+    private FacadeGeneral fg;
     private final MongoClient mongoClient = new MongoClient();
     private final MongoTemplate mongoTemplate = new MongoTemplate(mongoClient, "bancodesafio");
 
-    public Page<SharingEntity> listAllByUser(String idUserCreator, Pageable pageable) {
+    public Page<SharingEntity> listAllByUser(Model model, String idUser, Optional<Integer> page, Optional<Integer> size) {
+        int currentPage = page.orElse(1);
+        int pageSize = size.orElse(5);
+
+        Page<SharingEntity> sharePaged = listAllByUser1(idUser, PageRequest.of(currentPage - 1, pageSize));
+
+        model.addAttribute("sharePaged", sharePaged);
+
+        int totPages = sharePaged.getTotalPages();
+        if (totPages > 0) {
+            List<Integer> pageNumbers = IntStream.rangeClosed(1, totPages)
+                    .boxed()
+                    .collect(Collectors.toList());
+            model.addAttribute("pageNumbers", pageNumbers);
+        }
+        return sharePaged;
+    }
+
+    private Page<SharingEntity> listAllByUser1(String idUserCreator, Pageable pageable) {
         final Query query = new Query();
         query.addCriteria(Criteria.where("idUserCreator").is(idUserCreator));
         List<SharingEntity> shares = mongoTemplate.find(query, SharingEntity.class);
         Page<SharingEntity> sharesPaged = pagedSearch(pageable, shares);
-        //sr.findByIdUserCreator(id);
+        //sr.findByIdUserCreator(idUserCreator);
+        return sharesPaged;
+    }
+
+    public Page<SharingEntity> listSharedWithMe(Model model, String idUser, Optional<Integer> page, Optional<Integer> size) {
+        int currentPage = page.orElse(1);
+        int pageSize = size.orElse(5);
+
+        Page<SharingEntity> sharePaged = listSharedWithMe1(idUser, PageRequest.of(currentPage - 1, pageSize));
+
+        model.addAttribute("sharePaged", sharePaged);
+
+        int totPages = sharePaged.getTotalPages();
+        if (totPages > 0) {
+            List<Integer> pageNumbers = IntStream.rangeClosed(1, totPages)
+                    .boxed()
+                    .collect(Collectors.toList());
+            model.addAttribute("pageNumbers", pageNumbers);
+        }
+        return sharePaged;
+    }
+
+    private Page<SharingEntity> listSharedWithMe1(String idUser, Pageable pageable) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("idUser").is(idUser));
+        List<SharingEntity> shares = mongoTemplate.find(query, SharingEntity.class);
+        Page<SharingEntity> sharesPaged = pagedSearch(pageable, shares);
+        //sr.findByIdUserCreator(idUserCreator);
         return sharesPaged;
     }
 
@@ -58,11 +111,11 @@ public class SharingService {
     }
 
     public void deleteByFile(String nameFile) throws Exception {
-        String idFile = us.fetchIdUpload(nameFile);
+        String idFile = fg.fetchIdUpload(nameFile);
         if (!idFile.isEmpty()) {
             deleteByIdFile(idFile);
         } else {
-            throw new Exception("Arquivo não encontrado.");
+            throw new Exception("File not found.");
         }
     }
 
@@ -71,4 +124,41 @@ public class SharingService {
         query.addCriteria(Criteria.where("idFile").is(id));
         mongoTemplate.remove(query, "shares");
     }
+
+    public void delete(String nameFile, String emailUser) throws Exception {
+        String idFile = fg.fetchIdUpload(nameFile);
+        if (!idFile.isEmpty()) {
+            String idUser = uf.fetchByIdUser(emailUser);
+            if (!idUser.isEmpty()) {
+                final Query query = new Query();
+                query.addCriteria(Criteria.where("idFile").is(idFile).and("idUser").is(idUser));
+                SharingEntity up = mongoTemplate.findOne(query, SharingEntity.class);
+                if (up != null) {
+                    mongoTemplate.remove(query, "shares");
+                } else {
+                    throw new Exception("This file is not shared with this user.");
+                }
+            } else {
+                throw new Exception("User not found.");
+            }
+        } else {
+            throw new Exception("File not found.");
+        }
+    }
+
+    public void share(String nameFile, String idUserShared, String emailUserForShare) throws Exception {
+        String idFile = upf.fetchIdUpload(nameFile);
+        if (upf.verifyExists(idFile)) {
+            String idUser = uf.fetchByIdUser(emailUserForShare);
+            if (uf.verifyExists(idUser)) {
+                SharingEntity se = new SharingEntity(idFile, idUser, idUserShared);
+                sr.save(se);
+            } else {
+                throw new Exception("Nonexistent user.");
+            }
+        } else {
+            throw new Exception("The file you are trying to share does not exist.");
+        }
+    }
+
 }

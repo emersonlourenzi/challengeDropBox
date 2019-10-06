@@ -31,4 +31,12 @@ public class UserFacade {
     public UserModel update(String id, UserModel user) {
         return service.update(id, user);
     }
+
+    public String fetchByIdUser(String emailUser) {
+        return service.fetchIdUser(emailUser);
+    }
+
+    public boolean verifyExists(String idUser) {
+        return service.verifyExists(idUser);
+    }
 }

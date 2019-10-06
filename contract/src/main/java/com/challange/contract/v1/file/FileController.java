@@ -1,6 +1,7 @@
 package com.challange.contract.v1.file;
 
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -21,8 +22,8 @@ public class FileController {
     }
 
     @DeleteMapping()
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathParam("idUser") String idUser, @PathParam("name") String name) throws Exception {
-        System.out.println("1 - " + idUser + " +++++++++++++++++++++ " + name);
         fcf.delete(idUser, name);
     }
 

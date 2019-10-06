@@ -3,9 +3,11 @@ package com.challange.impl.upload.repository;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @AllArgsConstructor
+@NoArgsConstructor
 @Data
 @Builder
 @Document(value = "uploads")
@@ -18,4 +20,5 @@ public class UploadEntity {
         this.nameFile = nameFile;
         this.idUserCreator = idUserCreator;
     }
+
 }

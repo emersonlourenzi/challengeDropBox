@@ -60,13 +60,13 @@ public class FileService {
                 saveUpload(newName, idUser);
             }
         } catch (IOException e) {
-            throw new Exception("Não foi possível conectar no servidor FTP. " + e.getMessage());
+            throw new Exception("Unable to connect to FTP server. " + e.getMessage());
         } finally {
             try {
                 ftpClient.logout();
                 ftpClient.disconnect();
             } catch (IOException e) {
-                throw new Exception("Não foi possível desconectar no servidor FTP. " + e.getMessage());
+                throw new Exception("Unable to disconnect on FTP server. " + e.getMessage());
             }
         }
     }
@@ -77,18 +77,17 @@ public class FileService {
             connectServerFTP();
             ftpClient.enterLocalPassiveMode();
             ftpClient.changeWorkingDirectory(ideUser);
-            //nameDirectory = ft.listNames();
             nameDirectory = ftpClient.listFiles();
             Page<FTPFile> files = pagedSerch(pageable, nameDirectory);
             return files;
         } catch (IOException e) {
-            throw new Exception("Não foi possível conectar no servidor FTP. " + e.getMessage());
+            throw new Exception("Unable to connect to FTP server. " + e.getMessage());
         } finally {
             try {
                 ftpClient.logout();
                 ftpClient.disconnect();
             } catch (IOException e) {
-                throw new Exception("Não foi possível desconectar do servidor FTP. " + e.getMessage());
+                throw new Exception("Unable to disconnect from FTP server. " + e.getMessage());
             }
         }
     }
@@ -114,11 +113,10 @@ public class FileService {
     }
 
     public void deleteFiles(String idUser, String name) throws Exception {
-        System.out.println(idUser + " ++++++++++++++++++++++++ " + name);
         try {
             connectServerFTP();
             if (!verifyExists(idUser)) {
-                throw new Exception("Usuário inexistente.");
+                throw new Exception("User does not exist. ");
             } else {
                 ftpClient.changeWorkingDirectory(idUser);
                 boolean fileExists = false;
@@ -132,11 +130,11 @@ public class FileService {
                     ftpClient.deleteFile(name);
                     deleteUpload(name);
                 } else {
-                    throw new Exception("Arquivo não encontrado.");
+                    throw new Exception("File not found. ");
                 }
             }
         } catch (IOException e) {
-            throw new Exception("Não foi possível conectar no servidor FTP. " + e.getMessage());
+            throw new Exception("Unable to connect to FTP server. " + e.getMessage());
         } finally {
             try {
                 ftpClient.logout();
@@ -151,10 +149,8 @@ public class FileService {
         if (verifyExists(idUser)) {
             UploadEntity up = new UploadEntity(name, idUser);
             uploadService.save(up);
-            /*String idArquivo = upload.buscarIdUpload(nome);
-            compartilharArquivos(idArquivo,idUsuario);*/
         } else {
-            System.out.print("Usuário inexistente.");
+            System.out.print("User does not exist. ");
         }
     }
 

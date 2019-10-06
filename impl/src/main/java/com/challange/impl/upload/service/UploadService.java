@@ -1,6 +1,6 @@
 package com.challange.impl.upload.service;
 
-import com.challange.impl.sharing.service.SharingService;
+import com.challange.impl.FacadeGeneral;
 import com.challange.impl.upload.repository.UploadEntity;
 import com.challange.impl.upload.repository.UploadRepository;
 import com.mongodb.MongoClient;
@@ -17,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 public class UploadService {
     private UploadRepository ur;
-    private SharingService ss;
+    private FacadeGeneral fg;
 
     private final MongoClient mongoClient = new MongoClient();
     private final MongoTemplate mongoTemplate = new MongoTemplate(mongoClient,"bancodesafio");
@@ -35,15 +35,15 @@ public class UploadService {
         String id = fetchIdUpload(nameFile);
         if(!id.isEmpty()) {
             ur.deleteById(id);
-            ss.deleteByIdFile(id);
+            fg.deleteByIdFile(id);
         }
         else {
-            throw new Exception("Arquivo não encontrado");
+            throw new Exception("File not found. ");
         }
     }
 
     public String fetchIdUpload(String nameFile) {
-        final Query query = new Query();
+        Query query = new Query();
         query.addCriteria(Criteria.where("nameFile").is(nameFile));
         UploadEntity upload = mongoTemplate.findOne(query, UploadEntity.class);
         if(upload != null) {
@@ -64,7 +64,7 @@ public class UploadService {
         List<UploadEntity> lisUpload = mongoTemplate.find(query, UploadEntity.class);
         for (Iterator iterator = lisUpload.iterator(); iterator.hasNext();) {
             UploadEntity upload = (UploadEntity) iterator.next();
-            ss.deleteByIdFile(upload.getId());
+            fg.deleteByIdFile(upload.getId());
             mongoTemplate.remove(upload);
         }
     }
