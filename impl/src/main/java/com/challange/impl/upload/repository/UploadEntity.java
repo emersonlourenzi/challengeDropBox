@@ -20,5 +20,4 @@ public class UploadEntity {
         this.nameFile = nameFile;
         this.idUserCreator = idUserCreator;
     }
-
 }

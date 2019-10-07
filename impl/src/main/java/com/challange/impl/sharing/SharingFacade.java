@@ -35,7 +35,7 @@ public class SharingFacade {
         ss.share(nameFile, idUser, emailByShare);
     }
 
-    public void delete(String nameFile, String idUser) throws Exception {
-        ss.delete(nameFile, idUser);
+    public void delete(String emailWithWhomYouShared, String nameFile, String idUser) throws Exception {
+        ss.delete(emailWithWhomYouShared, nameFile, idUser);
     }
 }

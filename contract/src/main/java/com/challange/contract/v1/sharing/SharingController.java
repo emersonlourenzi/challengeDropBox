@@ -13,33 +13,32 @@ import java.util.Optional;
 @RestController
 @AllArgsConstructor
 public class SharingController {
-    private SharingContractFacade scf;
+    private SharingContractFacade facade;
 
     @GetMapping
     public List<SharingEntity> listingAllSharing() {
-        return scf.listingAllSharing();
+        return facade.listingAllSharing();
     }
 
     @GetMapping(path = "/{id}")
     public Page<SharingEntity> ListAllByUser(Model model, @PathVariable("id") String idUser, @RequestParam("page") Optional<Integer> page,
                                              @RequestParam("size") Optional<Integer> size) {
-        return scf.listAllByUser(model, idUser, page, size);
+        return facade.listAllByUser(model, idUser, page, size);
     }
 
     @GetMapping(path = "/withme/{id}")
     public Page<SharingEntity> listSharedWithMe(Model model, @PathVariable("id") String idUser, @RequestParam("page") Optional<Integer> page,
                                                 @RequestParam("size") Optional<Integer> size) {
-        return scf.listSharedWithMe(model, idUser, page, size);
+        return facade.listSharedWithMe(model, idUser, page, size);
     }
 
     @PostMapping(path = "/{id}")
     public void share(@RequestParam("nameFile") String nameFile, @PathVariable("id") String idUser, @RequestParam("emailByShare") String emailByShare) throws Exception {
-        scf.share(nameFile, idUser, emailByShare);
+        facade.share(nameFile, idUser, emailByShare);
     }
 
     @DeleteMapping(path = "/{id}")
-    public void delete(@RequestParam("nameFile") String nameFile, @PathVariable("id") String idUser) throws Exception {
-        scf.delete(nameFile, idUser);
+    public void delete(@RequestParam("emailShared") String emailWithWhomYouShared, @RequestParam("nameFile") String nameFile, @PathVariable("id") String idUser) throws Exception {
+        facade.delete(emailWithWhomYouShared, nameFile, idUser);
     }
-
 }

@@ -22,9 +22,8 @@ public class UploadService {
     private final MongoClient mongoClient = new MongoClient();
     private final MongoTemplate mongoTemplate = new MongoTemplate(mongoClient,"bancodesafio");
 
-    public void listAllUploads() {
-        ur.findAll();
-
+    public List<UploadEntity> listAllUploads() {
+        return ur.findAll();
     }
 
     public void save(UploadEntity up) {

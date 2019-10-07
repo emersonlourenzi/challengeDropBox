@@ -17,6 +17,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -184,6 +185,25 @@ public class FileService {
             return new ResponseEntity<>(files, HttpStatus.OK);
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    public InputStream downloadFile(String id, String nameFile) throws IOException {
+        try {
+            connectServerFTP();
+            ftpClient.changeWorkingDirectory(id);
+
+            return ftpClient.retrieveFileStream(nameFile);
+        } catch (IOException e) {
+            e.getMessage();
+            return null;
+        } finally {
+            try {
+                ftpClient.logout();
+                ftpClient.disconnect();
+            } catch (IOException e) {
+                new Exception("Unable to disconnect from FTP server. " + e.getMessage());
+            }
         }
     }
 }

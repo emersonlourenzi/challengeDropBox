@@ -5,13 +5,15 @@ import com.challange.impl.upload.service.UploadService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @AllArgsConstructor
 public class UploadFacade {
     private UploadService us;
 
-    public void listAllUploads() {
-        us.listAllUploads();
+    public List<UploadEntity> listAllUploads() {
+        return us.listAllUploads();
     }
 
     public void deleteByIdUser(String id) {

@@ -125,13 +125,13 @@ public class SharingService {
         mongoTemplate.remove(query, "shares");
     }
 
-    public void delete(String nameFile, String emailUser) throws Exception {
+    public void delete(String emailWithWhomYouShared, String nameFile, String idUser) throws Exception {
         String idFile = fg.fetchIdUpload(nameFile);
         if (!idFile.isEmpty()) {
-            String idUser = uf.fetchByIdUser(emailUser);
+            String idUserShared = uf.fetchByIdUser(emailWithWhomYouShared);
             if (!idUser.isEmpty()) {
                 final Query query = new Query();
-                query.addCriteria(Criteria.where("idFile").is(idFile).and("idUser").is(idUser));
+                query.addCriteria(Criteria.where("idFile").is(idFile).and("idUser").is(idUserShared).and("idUserCreator").is(idUser));
                 SharingEntity up = mongoTemplate.findOne(query, SharingEntity.class);
                 if (up != null) {
                     mongoTemplate.remove(query, "shares");

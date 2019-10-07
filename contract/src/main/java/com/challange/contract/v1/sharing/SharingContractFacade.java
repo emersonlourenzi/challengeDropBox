@@ -31,7 +31,7 @@ public class SharingContractFacade {
         sf.share(nameFile, idUser, emailByShare);
     }
 
-    public void delete(String nameFile, String idUser) throws Exception {
-        sf.delete(nameFile, idUser);
+    public void delete(String emailWithWhomYouShared, String nameFile, String idUser) throws Exception {
+        sf.delete(emailWithWhomYouShared, nameFile, idUser);
     }
 }
